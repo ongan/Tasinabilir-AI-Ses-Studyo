@@ -4,24 +4,18 @@ import json
 import time
 import shutil
 
-# --- DÜZELTİLMİŞ AYARLAR ---
-# Dosyanın bulunduğu klasörü (Projects) baz al
+# --- AYARLAR ---
 base_path = os.path.dirname(os.path.abspath(__file__))
-
 input_folder = os.path.join(base_path, "Gelen_Isler")
 output_folder = os.path.join(base_path, "Tamamlananlar")
 voices_folder = os.path.join(base_path, "Voices")
 ambience_folder = os.path.join(base_path, "Ambience")
+ref_folder = os.path.join(base_path, "References")
 
-os.makedirs(input_folder, exist_ok=True)
-os.makedirs(output_folder, exist_ok=True)
-os.makedirs(voices_folder, exist_ok=True)
-os.makedirs(ambience_folder, exist_ok=True)
-os.makedirs(input_folder, exist_ok=True)
-os.makedirs(output_folder, exist_ok=True)
-os.makedirs(voices_folder, exist_ok=True)
-os.makedirs(ambience_folder, exist_ok=True)
+for f in [input_folder, output_folder, voices_folder, ambience_folder, ref_folder]:
+    os.makedirs(f, exist_ok=True)
 
+# --- LİSTELEME FONKSİYONLARI ---
 def sesleri_al():
     d = [f.split(".")[0] for f in os.listdir(voices_folder) if f.endswith(('.wav', '.mp3'))]
     return d if d else ["Ses Yok"]
@@ -30,106 +24,101 @@ def fonlari_al():
     d = [f.split(".")[0] for f in os.listdir(ambience_folder) if f.endswith(('.wav', '.mp3'))]
     return ["Yok"] + d
 
-# --- FONKSİYONLAR ---
+def referanslari_al():
+    d = [f for f in os.listdir(ref_folder) if f.endswith(('.png', '.jpg', '.jpeg'))]
+    return d if d else ["Referans Yok"]
 
-def tekli_is_ver(metin, ses_adi, fon_adi):
-    if not metin or ses_adi == "Ses Yok": return "Eksik bilgi!"
-    
-    is_id = f"tek_{int(time.time())}"
-    json_path = os.path.join(input_folder, f"{is_id}.json")
-    
-    data = {"metin": metin, "ses": ses_adi, "fon": fon_adi}
-    
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False)
-    
-    return f"Sipariş verildi! ID: {is_id} (Tamamlananlar klasörünü bekle)"
+# --- YÜKLEME FONKSİYONLARI ---
+def referans_yukle(files):
+    if not files: return "Dosya seçilmedi."
+    log = ""
+    for file_obj in files:
+        shutil.copy(file_obj.name, os.path.join(ref_folder, os.path.basename(file_obj.name)))
+        log += f"✅ Yüklendi: {os.path.basename(file_obj.name)}\n"
+    return log
 
+# --- İŞLEM FONKSİYONLARI ---
 def toplu_dosya_isle(files):
     if not files: return "Dosya seçilmedi."
-    
     rapor = ""
     for file_obj in files:
         try:
-            # Dosya içeriğini oku
             filename = os.path.basename(file_obj.name)
-            with open(file_obj.name, "r", encoding="utf-8") as f:
-                content = f.read()
+            with open(file_obj.name, "r", encoding="utf-8") as f: content = f.read()
             
-            # Formatı Ayrıştır (SES: X, FON: Y, --- Metin)
             lines = content.split("\n")
-            
             secilen_ses = "Ses Yok"
             secilen_fon = "Yok"
-            baslangic_satiri = 0
+            baslangic = 0
             
-            # Başlıkları Oku
             for i, line in enumerate(lines):
-                if line.startswith("SES:"):
-                    secilen_ses = line.split(":")[1].strip()
-                elif line.startswith("FON:"):
-                    secilen_fon = line.split(":")[1].strip()
-                elif line.startswith("---"):
-                    baslangic_satiri = i + 1
-                    break
+                if line.startswith("SES:"): secilen_ses = line.split(":")[1].strip()
+                elif line.startswith("FON:"): secilen_fon = line.split(":")[1].strip()
+                elif line.startswith("---"): baslangic = i + 1; break
             
-            # Eğer etiket yoksa varsayılanları kullanır, metnin tamamını alır
-            metin = "\n".join(lines[baslangic_satiri:])
-            
-            # İşi Oluştur
+            metin = "\n".join(lines[baslangic:])
             is_id = f"toplu_{filename}_{int(time.time())}"
-            json_path = os.path.join(input_folder, f"{is_id}.json")
             
             data = {"metin": metin, "ses": secilen_ses, "fon": secilen_fon}
             
-            with open(json_path, "w", encoding="utf-8") as f:
+            with open(os.path.join(input_folder, f"{is_id}.json"), "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False)
                 
-            rapor += f"✅ {filename} -> Kuyruğa Eklendi (Ses: {secilen_ses}, Fon: {secilen_fon})\n"
-            
+            rapor += f"✅ Kuyrukta: {filename}\n"
         except Exception as e:
-            rapor += f"❌ {filename} -> HATA: {str(e)}\n"
-            
+            rapor += f"❌ Hata ({filename}): {str(e)}\n"
     return rapor
 
-# --- ARAYÜZ ---
-with gr.Blocks(title="AI STÜDYO PRO") as demo:
-    gr.Markdown("## 🎙️ YOUTUBE OTOMASYON STÜDYOSU")
+# --- ARAYÜZ TASARIMI ---
+with gr.Blocks(title="AI MULTIMEDYA STUDIO") as demo:
+    gr.Markdown("# 🎬 AI FİLM STÜDYOSU (V9.0 - TUTARLI KARAKTER MODU)")
     
     with gr.Tabs():
-        # TAB 1: TEKİL İŞLEM (Hızlı Test)
-        with gr.TabItem("Tekli Üretim"):
+        # TAB 1: REFERANS YÖNETİMİ
+        with gr.TabItem("🖼️ Referans Resim Yükle"):
+            gr.Markdown("Hikayede kullanacağın karakter veya mekan resimlerini buraya yükle. İsimleri basit olsun (örn: `Ahmet.png`, `Ev.jpg`).")
             with gr.Row():
-                with gr.Column():
-                    t_txt = gr.Textbox(label="Metin", lines=5)
-                    t_ses = gr.Dropdown(label="Ses Seç", choices=sesleri_al())
-                    t_fon = gr.Dropdown(label="Fon Müziği Seç", choices=fonlari_al())
-                    t_btn = gr.Button("BAŞLAT", variant="primary")
-                with gr.Column():
-                    t_out = gr.Label(label="Durum")
+                ref_files = gr.File(file_count="multiple", label="Resimleri Sürükle")
+                ref_btn = gr.Button("REFERANSLARI KAYDET", variant="secondary")
+            ref_out = gr.Textbox(label="Durum")
             
-            t_btn.click(tekli_is_ver, [t_txt, t_ses, t_fon], t_out)
+            # Galeri (Mevcut resimleri göster)
+            gr.Markdown("### 📂 Yüklü Referanslar")
+            ref_gallery = gr.Gallery(label="Kayıtlı Resimler", columns=4, height=300)
+            refresh_btn = gr.Button("Galeriyi Yenile")
 
-        # TAB 2: TOPLU İŞLEM (Dosya Yükleme)
-        with gr.TabItem("Toplu Dosya İşleme (.txt)"):
+            def galeri_guncelle():
+                paths = [os.path.join(ref_folder, f) for f in os.listdir(ref_folder) if f.endswith(('.png','.jpg'))]
+                return paths
+
+            ref_btn.click(referans_yukle, ref_files, ref_out)
+            refresh_btn.click(galeri_guncelle, outputs=ref_gallery)
+
+        # TAB 2: İŞLEM MERKEZİ
+        with gr.TabItem("📝 Senaryo İşle"):
             gr.Markdown("""
-            **Format:** Dosyanın başına şunları ekleyin:
+            **Nasıl Kullanılır?**
+            Metnin içine `[REF: Ahmet.png]` yazarsan, o sahneyi Ahmet'e bakarak çizer.
+            
+            **Örnek Senaryo:**
             ```text
-            SES: İlber_Ortayli
+            SES: Ana_Florence
             FON: Savas_Muzigi
             ---
-            Hikaye buraya...
+            [REF: Kral.png]
+            [IMG: king sitting on throne, tired]
+            Kral yorgun bir şekilde tahtında oturuyordu.
+
+            [REF: Kral.png, Vezir.png]
+            [IMG: king talking to advisor, angry]
+            Vezir içeri girdiğinde kral ayağa kalktı.
             ```
             """)
-            m_files = gr.File(file_count="multiple", label=".txt Dosyalarını Buraya Sürükle")
-            m_btn = gr.Button("DOSYALARI İŞLE", variant="primary")
-            m_out = gr.Textbox(label="İşlem Raporu", lines=10)
+            m_files = gr.File(file_count="multiple", label=".txt Senaryoları Yükle")
+            m_btn = gr.Button("FİLMİ OLUŞTUR", variant="primary")
+            m_out = gr.Textbox(label="Rapor", lines=5)
             
             m_btn.click(toplu_dosya_isle, m_files, m_out)
-
-        # TAB 3: KÜTÜPHANE
-        with gr.TabItem("Kütüphane Yönetimi"):
-            gr.Markdown("Sesleri ve Müzikleri `Projects/Voices` ve `Projects/Ambience` klasörlerine atabilirsiniz. Listeyi yenilemek için sayfayı yenileyin.")
 
 if __name__ == "__main__":
     demo.queue().launch(inbrowser=True)

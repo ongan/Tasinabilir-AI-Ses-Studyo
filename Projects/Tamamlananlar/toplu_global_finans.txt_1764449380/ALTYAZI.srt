@@ -1,0 +1,12 @@
+1
+00:00:00,000 --> 00:00:03,574
+Paranızı bir tohum gibi düşünün.
+
+2
+00:00:03,874 --> 00:00:08,003
+Eğer onu sularsanız, zamanla dev bir ağaca dönüşür.
+
+3
+00:00:08,303 --> 00:00:12,016
+Ve siz uyurken bile size meyve verir.
+

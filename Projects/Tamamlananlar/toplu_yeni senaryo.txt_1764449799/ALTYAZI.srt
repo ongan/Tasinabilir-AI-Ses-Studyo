@@ -1,8 +1,0 @@
-1
-00:00:00,000 --> 00:00:02,593
-Paranızı bir tohum gibi düşünün.
-
-2
-00:00:02,893 --> 00:00:07,064
-Eğer onu sularsanız, zamanla dev bir ağaca dönüşür.
-

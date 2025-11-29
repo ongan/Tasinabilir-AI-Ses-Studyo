@@ -1,0 +1,19 @@
+# --- Büyük Sistem Dosyaları (Bunları Git'e yükleme) ---
+Python310/
+Tools/
+VSCode/
+
+# --- Çıktılar ve Geçici Dosyalar ---
+Projects/*.wav
+Projects/*.mp3
+__pycache__/
+*.tmp
+
+# --- İndirilen AI Modelleri ---
+# Modeller genelde C:\Users\Adin\AppData... altına iner ama
+# eğer klasör içine indirdiysen buraya yolunu eklemeliyiz.
+tts_models/
+
+# --- Sistem Dosyaları ---
+.DS_Store
+Thumbs.db

@@ -1,0 +1,48 @@
+# --- SİSTEM DOSYALARI ---
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
+.vscode/
+
+# --- PYTHON ORTAMI ---
+Python310/
+venv/
+env/
+
+# --- BÜYÜK MODELLER VE ARAÇLAR ---
+Tools/
+Lora/
+tts_models/
+*.safetensors
+*.bin
+*.pth
+*.ckpt
+
+# --- KULLANICI MEDYA DOSYALARI ---
+# Bu klasörlerin içindekiler GitHub'a gitmesin, sadece senin bilgisayarında kalsın
+Voices/
+Ambience/
+References/
+
+# --- İŞ AKIŞI KLASÖRLERİ ---
+Gelen_Isler/
+Tamamlananlar/
+
+# --- GEÇİCİ DOSYALAR ---
+*.tmp
+temp_line.wav
+temp_worker.wav
+temp_gui.wav
+*.json
+*.log
+
+# --- MEDYA UZANTILARI (Garanti Olsun) ---
+*.wav
+*.mp3
+*.mp4
+*.png
+*.jpg
+*.jpeg
+*.srt
+VSCode/

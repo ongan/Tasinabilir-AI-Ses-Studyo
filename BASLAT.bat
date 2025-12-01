@@ -1,15 +1,16 @@
 @echo off
-:: Burasi bizim tasinabilir stüdyomuzun ayarlarini yapar
-echo AI STUDIO Baslatiliyor...
-set "COQUI_TOS_AGREED=1"
+title AI STUDIO - GELISTIRICI MODU
+color 0E
 
-:: Bulundugumuz klasoru alir
+echo ==================================================
+echo  VS CODE PORTABLE ORTAMINDA ACILIYOR...
+echo ==================================================
+
+:: Yollari Tanimla
 set "STUDIO_ROOT=%~dp0"
-
-:: Python ve FFmpeg yollarini gecici olarak tanimlar (Sadece bu pencere icin)
 set "PATH=%STUDIO_ROOT%Python310;%STUDIO_ROOT%Python310\Scripts;%STUDIO_ROOT%Tools\ffmpeg\bin;%PATH%"
 
-:: VS Code'u bu ayarlarla acar
+:: VS Code'u Ac (Projects klasoruyle birlikte)
 start "" "%STUDIO_ROOT%VSCode\Code.exe" "%STUDIO_ROOT%Projects"
 
 exit
